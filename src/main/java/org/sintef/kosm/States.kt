@@ -55,7 +55,7 @@ open class Region(val states : List<StateT>, val initial : StateT, val internals
                 handler.execute()
                 dispatch(NullEvent)//it might be an auto-transition (with no event) after this one. Not recommended for internal transition, as it is likely to be an infinite loop... but why not?
             }
-            is Transition -> {
+            is Transition -> {//note: this could also be an AutoTransition, still, it is the same behavior
                 current.onExit()
                 handler.execute()
                 current = handler.target
@@ -82,6 +82,7 @@ open class CompositeState(action : StateAction = NullStateAction, name : String,
             current = initial
         println("current.name = " + current.name)
         current.onEntry()
+        dispatch(NullEvent)
     }
 
     override fun onExit() {
@@ -98,11 +99,6 @@ open class CompositeState(action : StateAction = NullStateAction, name : String,
 }
 
 class StateMachine(action : StateAction = NullStateAction, name : String, regions : List<Region> = ArrayList(), states : List<StateT>, initial : State, internals : List<InternalTransition>, transitions : List<Transition>, keepHistory : Boolean = false) : CompositeState(action, name, regions, states, initial, internals, transitions, keepHistory) {
-
-   override fun onEntry() {
-        super<CompositeState>.onEntry()
-        dispatch(NullEvent)
-    }
 
 }
 

@@ -4,14 +4,14 @@ abstract class Handler(val action : HandlerAction = NullHandlerAction, val event
 
 }
 
-open class Transition(val source : State, val target : State, action : HandlerAction = NullHandlerAction, event : EventType) : Handler(action, event) {
+open class Transition(val source : StateT, val target : StateT, action : HandlerAction = NullHandlerAction, event : EventType) : Handler(action, event) {
 
 }
 
-class AutoTransition (source : State, target : State, action : HandlerAction = NullHandlerAction) : Transition(source, target, action, NullEventType) {
+class AutoTransition (source : StateT, target : StateT, action : HandlerAction = NullHandlerAction) : Transition(source, target, action, NullEventType) {
 
 }
 
-class InternalTransition(val state : State, action : HandlerAction = NullHandlerAction, event : EventType) : Handler(action, event) {
+class InternalTransition(val state : StateT, action : HandlerAction = NullHandlerAction, event : EventType) : Handler(action, event) {
 
 }
