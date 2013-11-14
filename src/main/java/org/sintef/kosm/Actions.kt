@@ -7,6 +7,7 @@ trait Action {}
 trait StateAction : Action {
     fun onEntry()
     fun onExit()
+    fun setContext(state : StateT)
 }
 
 trait HandlerAction : Action {
@@ -20,6 +21,8 @@ object NullStateAction : StateAction {
 
     override fun onExit() {}
 
+    override fun setContext(state : StateT) {}
+
 }
 
 object NullHandlerAction : HandlerAction {
@@ -28,16 +31,38 @@ object NullHandlerAction : HandlerAction {
 
 }
 
+//Debug
+open class DebugStateAction(val action : StateAction) : StateAction by action {
+
+    var state : StateT? = null
+
+    override fun setContext(state : StateT) { this.state = state }
+
+    override fun onEntry() {
+        println("before " + state?.name + " onEntry [" + Date().getTime() + "]")
+        action.onEntry()
+        println("after " + state?.name + " onEntry [" + Date().getTime() + "]")
+    }
+
+    override fun onExit() {
+        println("before " + state?.name + " onExit [" + Date().getTime() + "]")
+        action.onExit()
+        println("after " + state?.name + " onExit [" + Date().getTime() + "]")
+    }
+
+}
+
+open class DebugHandlerAction(val action : HandlerAction) : HandlerAction by action {
+
+    override fun execute() {
+        println("before execute [" + Date().getTime() + "]")
+        action.execute()
+        println("after execute [" + Date().getTime() + "]")
+    }
+
+}
+
 //Mock-ups
-object DefaultStateAction : StateAction {
+class DefaultStateAction : DebugStateAction(NullStateAction) {}
 
-    override fun onEntry() { println("onEntry at " + Date().getTime()) }
-
-    override fun onExit() { println("onExit at " + Date().getTime()) }
-}
-
-object DefaultHandlerAction : HandlerAction {
-
-    override fun execute() { println("transition at " + Date().getTime()) }
-
-}
+class DefaultHandlerAction : DebugHandlerAction(NullHandlerAction) {}
