@@ -8,19 +8,27 @@ import java.util.ArrayList
 trait StateT : StateAction {
     val action : StateAction
     val name : String
+    var parent : StateT?
+    var component : Component?
 
     override fun onEntry() { action.onEntry() }
     override fun onExit() { action.onExit() }
     override fun setContext(state : StateT) { action.setContext(this) }
+    fun _setComponent(component : Component)
+
 }
 
 class State(name : String, action : StateAction = NullStateAction) : StateT {
     override val action : StateAction = action
     override val name : String = name
+    override var parent : StateT? = null
+    override var component : Component? = null
     {setContext(this)}
+
+    override fun _setComponent(component : Component) {this.component = component}
 }
 
-open class Region(val states : List<StateT>, val initial : StateT, val internals : List<InternalTransition>, val transitions : List<Transition>, val keepHistory : Boolean = false) {
+open class Region(val states : List<StateT>, val initial : StateT, internals : List<InternalTransition>, transitions : List<Transition>, val keepHistory : Boolean = false) {
 
     var current : StateT = initial
     val map : MutableMap<StateT, Map<EventType, Handler>> = HashMap();
@@ -51,7 +59,7 @@ open class Region(val states : List<StateT>, val initial : StateT, val internals
     open fun dispatch(event : Event) : Boolean {
         val handler : Handler? = map.get(current)!!.get(event.eType)//TODO: we should check guard (and improve transitions with guards, first)
 
-        var handled : Boolean = false
+        var handled = false
 
         when(current) {
             is CompositeState -> handled = current as CompositeState dispatch(event)
@@ -87,8 +95,21 @@ open class CompositeState(action : StateAction = NullStateAction, name : String,
 
     override val action : StateAction = action
     override val name : String = name
-    {setContext(this)}
+    override var parent : StateT? = null
+    override var component : Component? = null
+    {
+        setContext(this)
+        for(state : StateT in states) {
+            state.parent = this
+        }
+    }
 
+    override fun _setComponent(component : Component) {
+        this.component = component
+        for(state : StateT in states) {
+            state._setComponent(component)
+        }
+    }
     override fun onEntry() {
         super<StateT>.onEntry()
         if (!keepHistory)

@@ -32,6 +32,8 @@ public class SimpleTransitionTest {
         transitions.add(t1)
         val t2 : Transition = Transition(source = s2!!, target = s1!!, action = DefaultHandlerAction(), event = et3)
         transitions.add(t2)
+        val t3 : Transition = Transition(source = s2!!, target = s1!!, action = DefaultHandlerAction(), event = et1)
+        transitions.add(t3)
 
         val internals : MutableList<InternalTransition> = ArrayList()
         val it1 : InternalTransition = InternalTransition(state = s2!!, event = et1, action = DefaultHandlerAction())
