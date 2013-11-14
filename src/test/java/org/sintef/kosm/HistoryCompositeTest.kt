@@ -6,7 +6,7 @@ import org.junit.After
 import org.junit.Before
 import java.util.ArrayList
 
-public class CompositeTest {
+public class HistoryCompositeTest {
 
     var sm : StateMachine? = null
     var comp : CompositeState? = null
@@ -39,16 +39,16 @@ public class CompositeTest {
         states2.add(s2b!!)
 
         val internals2 : MutableList<InternalTransition> = ArrayList()
-        val it1b : InternalTransition = InternalTransition(state = s2b!!, event = et1, action = DefaultHandlerAction())
-        internals2.add(it1b)
+        /*val it1b : InternalTransition = InternalTransition(state = s2b!!, event = et3, action = DefaultHandlerAction())
+        internals2.add(it1b)*/
 
         val transitions2 : MutableList<Transition> = ArrayList()
         val t1b : Transition = Transition(source = s1b!!, target = s2b!!, action = DefaultHandlerAction(), event = et1)
         transitions2.add(t1b)
-        val t2b : Transition = Transition(source = s2b!!, target = s1b!!, action = DefaultHandlerAction(), event = et3)
+        val t2b : Transition = Transition(source = s2b!!, target = s1b!!, action = DefaultHandlerAction(), event = et2)
         transitions2.add(t2b)
 
-        comp = CompositeState(action = DefaultStateAction(), states = states2, initial = s1b!!, internals = internals2, transitions = transitions2, name = "Composite Test")
+        comp = CompositeState(action = DefaultStateAction(), states = states2, initial = s1b!!, internals = internals2, transitions = transitions2, name = "Composite Test", keepHistory = true)
         states.add(comp!!)
 
         val transitions : MutableList<Transition> = ArrayList()
@@ -56,6 +56,8 @@ public class CompositeTest {
         transitions.add(t1)
         val t2 : Transition = Transition(source = comp!!, target = s2!!, action = DefaultHandlerAction(), event = et3)
         transitions.add(t2)
+        val t3 : Transition = Transition(source = s2!!, target = comp!!, action = DefaultHandlerAction(), event = et2)
+        transitions.add(t3)
 
 
         val internals : MutableList<InternalTransition> = ArrayList()
@@ -77,7 +79,7 @@ public class CompositeTest {
 
     Test fun testTransitions() {
 
-        //SM(s1 --> Comp(s1b -et1-> s2b[et2] -et3-> s1b) -et3-> s2[et2])
+        //SM(s1 --> Comp(s1b -et1-> s2b[et2] -et2-> s1b) -et3-> s2[et2] -et2-> Comp)
 
         sm!!.onEntry()////this should trigger t1
         assertEquals(sm!!.current, comp)
@@ -88,16 +90,17 @@ public class CompositeTest {
         sm!!.dispatch(e1)//nothing
         assertEquals(sm!!.current, comp)
         assertEquals(comp!!.current, s2b)
-        sm!!.dispatch(e2)//internal transition inside Comp
-        assertEquals(sm!!.current, comp)
-        assertEquals(comp!!.current, s2b)
-        sm!!.dispatch(e1)//nothing
-        assertEquals(sm!!.current, comp)
-        assertEquals(comp!!.current, s2b)
-        sm!!.dispatch(e3)//transition inside Comp
+        sm!!.dispatch(e2)//transition inside Comp
         assertEquals(sm!!.current, comp)
         assertEquals(comp!!.current, s1b)
-        sm!!.dispatch(e3)//We should go out of Comp
+        sm!!.dispatch(e1)//transition inside Comp
+        assertEquals(sm!!.current, comp)
+        assertEquals(comp!!.current, s2b)
+        sm!!.dispatch(e3)//go out of Comp
         assertEquals(sm!!.current, s2)
+        assertEquals(comp!!.current, s2b)
+        sm!!.dispatch(e2)//back to Comp
+        assertEquals(sm!!.current, comp)
+        assertEquals(comp!!.current, s2b)
     }
 }

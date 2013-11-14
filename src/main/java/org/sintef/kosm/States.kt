@@ -48,24 +48,37 @@ open class Region(val states : List<StateT>, val initial : StateT, val internals
         }
     }
 
-    open fun dispatch(event : Event) {
+    open fun dispatch(event : Event) : Boolean {
         val handler : Handler? = map.get(current)!!.get(event.eType)//TODO: we should check guard (and improve transitions with guards, first)
-        when(handler) {
-            is InternalTransition -> {
-                handler.execute()
-                dispatch(NullEvent)//it might be an auto-transition (with no event) after this one. Not recommended for internal transition, as it is likely to be an infinite loop... but why not?
-            }
-            is Transition -> {//note: this could also be an AutoTransition, still, it is the same behavior
-                current.onExit()
-                handler.execute()
-                current = handler.target
-                current.onEntry()
-                dispatch(NullEvent)//it might be an auto-transition (with no event) after this one
-            }
-            else -> {
-                //nothing to do
+
+        var handled : Boolean = false
+
+        when(current) {
+            is CompositeState -> handled = current as CompositeState dispatch(event)
+            else -> handled = false
+        }
+
+        if (!handled) {
+            when(handler) {
+                is InternalTransition -> {
+                    handler.execute()
+                    dispatch(NullEvent)//it might be an auto-transition (with no event) after this one. Not recommended for internal transition, as it is likely to be an infinite loop... but why not?
+                    handled = true
+                }
+                is Transition -> {//note: this could also be an AutoTransition, still, it is the same behavior
+                    current.onExit()
+                    handler.execute()
+                    current = handler.target
+                    current.onEntry()
+                    dispatch(NullEvent)//it might be an auto-transition (with no event) after this one
+                    handled = true
+                }
+                else -> {
+                    handled = false
+                }
             }
         }
+        return handled
     }
 
 }
@@ -80,7 +93,6 @@ open class CompositeState(action : StateAction = NullStateAction, name : String,
         super<StateT>.onEntry()
         if (!keepHistory)
             current = initial
-        println("current.name = " + current.name)
         current.onEntry()
         dispatch(NullEvent)
     }
@@ -90,11 +102,11 @@ open class CompositeState(action : StateAction = NullStateAction, name : String,
         super<StateT>.onExit()
     }
 
-    override fun dispatch(event : Event) {
-        super<Region>.dispatch(event)
+    override fun dispatch(event : Event) : Boolean {
         for(r : Region in regions) {
-          r.dispatch(event)
+            r.dispatch(event)
         }
+        return super<Region>.dispatch(event)
     }
 }
 
