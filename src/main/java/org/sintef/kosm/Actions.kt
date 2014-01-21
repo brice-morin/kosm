@@ -1,6 +1,6 @@
 package org.sintef.kosm
 
-import java.util.Date
+import kotlin.util.measureTimeNano
 
 trait Action {}
 
@@ -39,15 +39,11 @@ open class DebugStateAction(val action : StateAction) : StateAction by action {
     override fun setContext(state : StateT) { this.state = state }
 
     override fun onEntry() {
-        println("before " + state?.name + " onEntry [" + Date().getTime() + "]")
-        action.onEntry()
-        println("after " + state?.name + " onEntry [" + Date().getTime() + "]")
+        println(state?.name + ".onEntry took: " + measureTimeNano { action.onEntry() } + " ns")
     }
 
     override fun onExit() {
-        println("before " + state?.name + " onExit [" + Date().getTime() + "]")
-        action.onExit()
-        println("after " + state?.name + " onExit [" + Date().getTime() + "]")
+        println(state?.name + ".onExit took: " + measureTimeNano { action.onExit() } + " ns")
     }
 
 }
@@ -55,9 +51,7 @@ open class DebugStateAction(val action : StateAction) : StateAction by action {
 open class DebugHandlerAction(val action : HandlerAction) : HandlerAction by action {
 
     override fun execute() {
-        println("before execute [" + Date().getTime() + "]")
-        action.execute()
-        println("after execute [" + Date().getTime() + "]")
+        println("Action took: " + measureTimeNano { action.execute() } + " ns")
     }
 
 }

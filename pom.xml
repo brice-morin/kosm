@@ -8,7 +8,7 @@
     
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<kotlin.version>0.6.602</kotlin.version>
+		<kotlin.version>0.6.1673</kotlin.version>
     </properties>
 	
 	<repositories>        
@@ -104,6 +104,12 @@
                             <goal>test-compile</goal>
                         </goals>
                     </execution>
+                    <!--<execution>
+                        <id>js</id>
+                        <goals>
+                            <goal>js</goal>
+                        </goals>
+                    </execution>-->
                 </executions>
             </plugin>			
 			
