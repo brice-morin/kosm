@@ -1,0 +1,79 @@
+<html lang="en">
+
+<script type="text/javascript" src="../../../target/js/kotlin-lib-ecma5.js"></script>
+<script type="text/javascript" src="../../../target/js/kotlin-lib.js"></script>
+<script type="text/javascript" src="../../../target/js/kotlin-maps.js"></script>
+<script type="text/javascript" src="../../../target/js/org.sintef.kosm.js"></script>
+<script>
+var kt = Kotlin.modules['org.sintef.kosm'];
+
+Kotlin.println('Test');
+console.log('Test');
+
+Kotlin.println('Creating states');
+console.log('Creating states');
+
+var states = new Kotlin.ArrayList();
+var s1 = new kt.org.sintef.kosm.State(new kt.org.sintef.kosm.DefaultStateAction(), 's1');
+var s2 = new kt.org.sintef.kosm.State(new kt.org.sintef.kosm.DefaultStateAction(), 's2');
+states.add(s1);
+states.add(s2);
+
+Kotlin.println('Creating event types');
+console.log('Creating event types');
+
+var et1 = new kt.org.sintef.kosm.EventType('a');
+var et2 = new kt.org.sintef.kosm.EventType('b');
+var et3 = new kt.org.sintef.kosm.EventType('c');
+
+Kotlin.println('Creating events');
+console.log('Creating events');
+
+var e1 = new kt.org.sintef.kosm.Event(et1);
+var e2 = new kt.org.sintef.kosm.Event(et2);
+var e3 = new kt.org.sintef.kosm.Event(et2);
+
+Kotlin.println('Creating transitions');
+console.log('Creating transitions');
+
+var transitions = new Kotlin.ArrayList();
+var t1 = new kt.org.sintef.kosm.AutoTransition(s1, s2, new kt.org.sintef.kosm.DefaultHandlerAction());
+var t2 = new kt.org.sintef.kosm.Transition(s2, s1, new kt.org.sintef.kosm.DefaultHandlerAction(), et3);
+var t3 = new kt.org.sintef.kosm.Transition(s2, s1, new kt.org.sintef.kosm.DefaultHandlerAction(), et1);
+transitions.add(t1);
+transitions.add(t2);
+transitions.add(t3);
+
+Kotlin.println('Creating internal transitions');
+console.log('Creating internal transitions');
+
+var internals = new Kotlin.ArrayList();
+var it1 = new kt.org.sintef.kosm.InternalTransition(s2, et1, new kt.org.sintef.kosm.DefaultHandlerAction());
+internals.add(it1);
+
+Kotlin.println('Creating the state machine');
+console.log('Creating the state machine');
+
+var sm = new kt.org.sintef.kosm.StateMachine(new kt.org.sintef.kosm.DefaultStateAction(), 'State Machine', void 0, states, s1, internals, transitions);
+
+Kotlin.println('Running the state machine');
+console.log('Running the state machine');
+
+sm.onEntry();
+Kotlin.println(' sm.current (s2) = ' + sm.current.name);
+console.log(' sm.current (s2) = ' + sm.current.name);
+sm.dispatch(e1);
+Kotlin.println(' sm.current (s2) = ' + sm.current.name);
+console.log(' sm.current (s2) = ' + sm.current.name);
+sm.dispatch(e1);
+Kotlin.println(' sm.current (s2) = ' + sm.current.name);
+console.log(' sm.current (s2) = ' + sm.current.name);
+sm.dispatch(e2);
+Kotlin.println(' sm.current (s2) = ' + sm.current.name);
+console.log(' sm.current (s2) = ' + sm.current.name);
+sm.dispatch(e1);
+Kotlin.println(' sm.current (s2) = ' + sm.current.name);
+console.log(' sm.current (s2) = ' + sm.current.name);
+sm.dispatch(e3);
+</script>
+</html>
