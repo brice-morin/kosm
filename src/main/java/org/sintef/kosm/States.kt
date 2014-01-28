@@ -163,12 +163,30 @@ fun main(args : Array<String>) {
     internals.add(it1)
 
     val sm : StateMachine = StateMachine(action = DefaultStateAction(), states = states, initial = s1, internals = internals, transitions = transitions, name = "State Machine")
-    sm.onEntry()//this should trigger t1
+
+    val inEvents : MutableList<EventType> = ArrayList()
+    inEvents.add(et1)
+    inEvents.add(et2)
+    inEvents.add(et3)
+    val outEvents : MutableList<EventType> = ArrayList()
+    val p : Port = Port("p", PortType.PROVIDED, inEvents, outEvents)
+    val ports : MutableList<Port> = ArrayList()
+    ports.add(p)
+    val c : Component = Component("component", ports, sm)
+    c.start()
+    p.receive(e1)
+    p.receive(e1)
+    p.receive(e2)
+    p.receive(e1)
+    p.receive(e3)
+
+
+    /*sm.onEntry()//this should trigger t1
     sm.dispatch(e1)//this should trigger it1
     sm.dispatch(e1)//this should trigger it1
     sm.dispatch(e2)//this should trigger nothing
     sm.dispatch(e1)//this should trigger it1
-    sm.dispatch(e3)//this should trigger t2, and then t1 (auto-transition)
+    sm.dispatch(e3)//this should trigger t2, and then t1 (auto-transition)*/
 
 
 }

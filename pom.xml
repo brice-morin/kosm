@@ -118,7 +118,37 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>			
+            </plugin>
+
+
+            <plugin>
+                <groupId>com.samaxes.maven</groupId>
+                <artifactId>minify-maven-plugin</artifactId>
+                <version>1.7.2</version>
+                <executions>
+
+                    <execution>
+                        <phase>package</phase>
+                        <id>js</id>
+                        <configuration>
+                            <jsSourceDir>../../../target/js</jsSourceDir>
+                            <jsTargetDir>../js</jsTargetDir>
+                            <jsEngine>CLOSURE</jsEngine>
+                            <jsFinalFile>kosm.js</jsFinalFile>
+                            <jsSourceFiles>
+                                <jsSourceFile>kotlin-lib-ecma5.js</jsSourceFile>
+                                <jsSourceFile>kotlin-lib.js</jsSourceFile>
+                                <jsSourceFile>kotlin-maps.js</jsSourceFile>
+                                <jsSourceFile>org.sintef.kosm.js</jsSourceFile>
+                            </jsSourceFiles>
+                            <!--<verbose>true</verbose>-->
+                        </configuration>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 			
         </plugins>
 

@@ -5,9 +5,10 @@ import java.util.ArrayList
 
 enum class PortType {REQUIRED; PROVIDED}
 
-class Port(val name : String, val portType : PortType, val inEvents : List<EventType>, val outEvents : List<EventType>, val connector : Connector?) {
+class Port(val name : String, val portType : PortType, val inEvents : List<EventType>, val outEvents : List<EventType>/*, val connector : Connector?*/) {
 
     var component : Component? = null
+    var connector : Connector? = null
 
     fun send(event : Event) {
         if (outEvents.containsItem(event.eType)) {
@@ -27,9 +28,16 @@ class Port(val name : String, val portType : PortType, val inEvents : List<Event
 
     fun setComponent(component : Component) {this.component = component}
 
+    //fun setConnector(connector : Connector) {this.connector = connector}
+
 }
 
 class Connector(val provided : Port, val required : Port) {
+
+    {
+        provided.connector = this
+        required.connector = this
+    }
 
     fun handle(event : Event, port : Port) {
         if (port == provided)
@@ -62,6 +70,10 @@ open class Component(val name : String, ports : List<Port>, val behavior : State
 
   fun receive(event : Event, port : Port) {
       behavior.dispatch(event)
+  }
+
+  fun start() {
+      behavior.onEntry()
   }
 
 }
