@@ -14,8 +14,8 @@ Kotlin.println('Creating states');
 console.log('Creating states');
 
 var states = new Kotlin.ArrayList();
-var s1 = new kt.org.sintef.kosm.State(new kt.org.sintef.kosm.DefaultStateAction(), 's1');
-var s2 = new kt.org.sintef.kosm.State(new kt.org.sintef.kosm.DefaultStateAction(), 's2');
+var s1 = new kt.org.sintef.kosm.State('s1', new kt.org.sintef.kosm.DefaultStateAction());
+var s2 = new kt.org.sintef.kosm.State('s2', new kt.org.sintef.kosm.DefaultStateAction());
 states.add(s1);
 states.add(s2);
 
