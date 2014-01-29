@@ -1,6 +1,8 @@
 package org.sintef.kosm
 
 import java.util.ArrayList
+import java.util.HashMap
+
 //import java.util.logging.Logger
 
 enum class PortType {REQUIRED; PROVIDED}
@@ -21,16 +23,11 @@ class Port(val name : String, val portType : PortType, val inEvents : List<Event
     fun receive(event : Event) {
         if (inEvents.containsItem(event.eType)) {
             event.port = this
-            component?.receive(event, this)
+            component?.receive(event)
         } else {
             //Logger.getLogger(this.javaClass.getName()).warning("Port " + this.name + " cannot handle event of type " + event.eType)
         }
     }
-
-    //fun setComponent(component : Component) {this.component = component}
-
-    //fun setConnector(connector : Connector) {this.connector = connector}
-
 }
 
 class Connector(val provided : Port, val required : Port) {
@@ -52,16 +49,16 @@ class Connector(val provided : Port, val required : Port) {
 }
 
 open class Component(val name : String, ports : List<Port>, val behavior : StateMachine) {
-  val providedPort : MutableList<Port> = ArrayList()
-  val requiredPort : MutableList<Port> = ArrayList();
+  val providedPort : MutableMap<String, Port> = HashMap();
+  val requiredPort : MutableMap<String, Port> = HashMap();
 
   {
       for(port : Port in ports) {
           port.component = this
           if (port.portType == PortType.REQUIRED) {
-              requiredPort.add(port)
+              requiredPort.put(port.name, port)
           } else {
-              providedPort.add(port)
+              providedPort.put(port.name, port)
           }
       }
 
@@ -69,7 +66,7 @@ open class Component(val name : String, ports : List<Port>, val behavior : State
 
   }
 
-  fun receive(event : Event, port : Port) {
+  fun receive(event : Event) {
       behavior.dispatch(event)
   }
 

@@ -14,7 +14,7 @@ trait StateAction : Action {
 
 trait HandlerAction : Action {
     fun check(e : Event) = true
-    fun execute()
+    fun execute(e : Event)
 }
 
 //Null Actions
@@ -34,7 +34,7 @@ object NullHandlerAction : HandlerAction {
     override var state : State? = null
     override var component : Component? = null
 
-    override fun execute() {}
+    override fun execute(e : Event) {}
 
 }
 
@@ -59,7 +59,7 @@ open class DebugHandlerAction() : HandlerAction {
     override var state : State? = null
     override var component : Component? = null
 
-    override fun execute() {
+    override fun execute(e : Event) {
         //println("Action took: " + measureTimeNano { action.execute() } + " ns")
     }
 
@@ -69,3 +69,22 @@ open class DebugHandlerAction() : HandlerAction {
 class DefaultStateAction() : DebugStateAction() {}
 
 class DefaultHandlerAction() : DebugHandlerAction() {}
+
+//Things to generate from ThingML
+object HelloTransitionAction : HandlerAction {
+
+    override var state : State? = null
+    override var component : Component? = null
+
+    override fun check(e: Event): Boolean {
+        println("DEBUG")
+        println(e is HelloEvent && e.port == component!!.providedPort.get("hello") )
+        return e is HelloEvent && e.port == component!!.providedPort.get("hello") //&& <custom guard>
+    }
+
+    override fun execute(e : Event) {
+        val e = e as HelloEvent
+        println("Hello " + e.who)
+    }
+
+}

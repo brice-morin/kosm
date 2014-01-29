@@ -50,6 +50,18 @@ open class Region(val states : List<State>, val initial : State, internals : Lis
         }
     }
 
+    open fun setComponent(component : Component) {
+        for(s : State in states) {
+            s.setComponent(component)
+        }
+
+        for(m : Map<EventType, Handler> in map.values()) {
+            for(h : Handler in m.values()) {
+                h.action.component = component
+            }
+        }
+    }
+
     open fun dispatch(event : Event) : Boolean {
         val handler : Handler? = map.get(current)!!.get(event.eType)//TODO: we should check guard (and improve transitions with guards, first)
 
@@ -64,7 +76,7 @@ open class Region(val states : List<State>, val initial : State, internals : Lis
             when(handler) {
                 is InternalTransition -> {
                     if (handler.check(event)/* && handler.port == event.port*/) {
-                        handler.execute()
+                        handler.execute(event)
                         dispatch(NullEvent)//it might be an auto-transition (with no event) after this one. Not recommended for internal transition, as it is likely to be an infinite loop... but why not?
                         handled = true
                     } else {handled = false}
@@ -72,7 +84,7 @@ open class Region(val states : List<State>, val initial : State, internals : Lis
                 is Transition -> {//note: this could also be an AutoTransition, still, it is the same behavior
                     if (handler.check(event)/* && handler.port == event.port*/) {
                     current.action.onExit()
-                    handler.execute()
+                    handler.execute(event)
                     current = handler.target
                     current.action.onEntry()
                     dispatch(NullEvent)//it might be an auto-transition (with no event) after this one
@@ -93,9 +105,13 @@ open class CompositeState(override val action : StateAction = NullStateAction, o
 
     override fun setComponent(component : Component) {
         super<State>.setComponent(component)
-        for(state : State in states) {
-            state.setComponent(component)
+        super<Region>.setComponent(component)
+        for (r : Region in regions) {
+            r.setComponent(component)
         }
+        /*for(state : State in states) {
+            state.setComponent(component)
+        }*/
     }
 
     override fun onEntry() {
