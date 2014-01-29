@@ -26,15 +26,15 @@ public class HistoryCompositeTest {
     val e3 : Event = Event(et3)
 
     Before fun setUp() {
-        s1 = State(action = DefaultStateAction(), name = "s1")
-        s2 = State(action = DefaultStateAction(), name = "s2")
-        val states : MutableList<StateT> = ArrayList()
+        s1 = AtomicState(action = DefaultStateAction(), name = "s1")
+        s2 = AtomicState(action = DefaultStateAction(), name = "s2")
+        val states : MutableList<State> = ArrayList()
         states.add(s1!!)
         states.add(s2!!)
 
-        s1b = State(action = DefaultStateAction(), name = "s1b")
-        s2b = State(action = DefaultStateAction(), name = "s2b")
-        val states2 : MutableList<StateT> = ArrayList()
+        s1b = AtomicState(action = DefaultStateAction(), name = "s1b")
+        s2b = AtomicState(action = DefaultStateAction(), name = "s2b")
+        val states2 : MutableList<State> = ArrayList()
         states2.add(s1b!!)
         states2.add(s2b!!)
 

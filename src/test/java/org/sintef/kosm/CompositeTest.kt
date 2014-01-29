@@ -8,12 +8,11 @@ import java.util.ArrayList
 
 public class CompositeTest {
 
-    var sm : StateMachine? = null
+    var c : Component? = null
+    var p : Port? = null
     var comp : CompositeState? = null
-
     var s1 : State? = null
     var s2 : State? = null
-
     var s1b : State? = null
     var s2b : State? = null
 
@@ -26,15 +25,15 @@ public class CompositeTest {
     val e3 : Event = Event(et3)
 
     Before fun setUp() {
-        s1 = State(action = DefaultStateAction(), name = "s1")
-        s2 = State(action = DefaultStateAction(), name = "s2")
-        val states : MutableList<StateT> = ArrayList()
+        s1 = AtomicState(action = DefaultStateAction(), name = "s1")
+        s2 = AtomicState(action = DefaultStateAction(), name = "s2")
+        val states : MutableList<State> = ArrayList()
         states.add(s1!!)
         states.add(s2!!)
 
-        s1b = State(action = DefaultStateAction(), name = "s1b")
-        s2b = State(action = DefaultStateAction(), name = "s2b")
-        val states2 : MutableList<StateT> = ArrayList()
+        s1b = AtomicState(action = DefaultStateAction(), name = "s1b")
+        s2b = AtomicState(action = DefaultStateAction(), name = "s2b")
+        val states2 : MutableList<State> = ArrayList()
         states2.add(s1b!!)
         states2.add(s2b!!)
 
@@ -62,12 +61,19 @@ public class CompositeTest {
         val it1 : InternalTransition = InternalTransition(state = s2!!, event = et1, action = DefaultHandlerAction())
         internals.add(it1)
 
+        val sm = StateMachine(action = DefaultStateAction(), states = states, initial = s1!!, internals = internals, transitions = transitions, name = "Test")
 
 
+        val inEvents : MutableList<EventType> = ArrayList()
+        inEvents.add(et1)
+        inEvents.add(et2)
+        inEvents.add(et3)
+        val outEvents : MutableList<EventType> = ArrayList()
+        p = Port("p", PortType.PROVIDED, inEvents, outEvents)
+        val ports : MutableList<Port> = ArrayList()
+        ports.add(p!!)
 
-
-
-        sm = StateMachine(action = DefaultStateAction(), states = states, initial = s1!!, internals = internals, transitions = transitions, name = "Test")
+        c = Component("test", ports, sm);
     }
 
     // override keyword required to override the tearDown method
@@ -78,26 +84,28 @@ public class CompositeTest {
     Test fun testTransitions() {
 
         //SM(s1 --> Comp(s1b -et1-> s2b[et2] -et3-> s1b) -et3-> s2[et2])
+        c!!.start()
+        assertEquals(c!!.behavior.current, comp)
+        assertEquals(comp!!.current, s1b)
+        p!!.receive(e1)//transition inside Comp
+        assertEquals(c!!.behavior.current, comp)
 
-        sm!!.onEntry()////this should trigger t1
-        assertEquals(sm!!.current, comp)
+        println(comp!!.current.name)
+
+        assertEquals(comp!!.current, s2b)
+        p!!.receive(e1)//nothing
+        assertEquals(c!!.behavior.current, comp)
+        assertEquals(comp!!.current, s2b)
+        p!!.receive(e2)//internal transition inside Comp
+        assertEquals(c!!.behavior.current, comp)
+        assertEquals(comp!!.current, s2b)
+        p!!.receive(e1)//nothing
+        assertEquals(c!!.behavior.current, comp)
+        assertEquals(comp!!.current, s2b)
+        p!!.receive(e3)//transition inside Comp
+        assertEquals(c!!.behavior.current, comp)
         assertEquals(comp!!.current, s1b)
-        sm!!.dispatch(e1)//transition inside Comp
-        assertEquals(sm!!.current, comp)
-        assertEquals(comp!!.current, s2b)
-        sm!!.dispatch(e1)//nothing
-        assertEquals(sm!!.current, comp)
-        assertEquals(comp!!.current, s2b)
-        sm!!.dispatch(e2)//internal transition inside Comp
-        assertEquals(sm!!.current, comp)
-        assertEquals(comp!!.current, s2b)
-        sm!!.dispatch(e1)//nothing
-        assertEquals(sm!!.current, comp)
-        assertEquals(comp!!.current, s2b)
-        sm!!.dispatch(e3)//transition inside Comp
-        assertEquals(sm!!.current, comp)
-        assertEquals(comp!!.current, s1b)
-        sm!!.dispatch(e3)//We should go out of Comp
-        assertEquals(sm!!.current, s2)
+        p!!.receive(e3)//We should go out of Comp
+        assertEquals(c!!.behavior.current, s2)
     }
 }

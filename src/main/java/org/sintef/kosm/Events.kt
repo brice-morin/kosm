@@ -4,11 +4,9 @@ package org.sintef.kosm
 
 open class EventType(val name : String)
 
-object DefaultEventType : EventType("Default")
-
 object NullEventType : EventType("Null")
 
 
-open class Event(val eType : EventType, val timestamp : Long? = 0/*Date().getTime()*/)
+open class Event(val eType : EventType, var port : Port? = null, val timestamp : Long? = 0/*Date().getTime()*/)
 
 object NullEvent : Event(NullEventType)

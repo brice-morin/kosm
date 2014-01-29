@@ -5,36 +5,30 @@ import java.util.HashMap
 import java.util.ArrayList
 
 
-trait StateT : StateAction {
-    val action : StateAction
+trait State {
     val name : String
-    var parent : StateT?
-    var component : Component?
+    val action : StateAction
+    fun setComponent(component : Component) {action.component = component}
 
-    override fun onEntry() { action.onEntry() }
-    override fun onExit() { action.onExit() }
-    override fun setContext(state : StateT) { action.setContext(this) }
-    fun _setComponent(component : Component)
-
+    fun onEntry() {action.onEntry()}
+    fun onExit() {action.onExit()}
 }
 
-class State(name : String, action : StateAction = NullStateAction) : StateT {
-    override val action : StateAction = action
-    override val name : String = name
-    override var parent : StateT? = null
-    override var component : Component? = null
-    {setContext(this)}
-
-    override fun _setComponent(component : Component) {this.component = component}
+class AtomicState(override val name : String, override val action : StateAction) : State {
+    {
+        println(action)
+        println(this)
+        action.state = this
+    }
 }
 
-open class Region(val states : List<StateT>, val initial : StateT, internals : List<InternalTransition>, transitions : List<Transition>, val keepHistory : Boolean = false) {
+open class Region(val states : List<State>, val initial : State, internals : List<InternalTransition>, transitions : List<Transition>, val keepHistory : Boolean = false) {
 
-    var current : StateT = initial
-    val map : MutableMap<StateT, Map<EventType, Handler>> = HashMap();
+    var current : State = initial
+    val map : MutableMap<State, Map<EventType, Handler>> = HashMap();
 
     {
-        for(s : StateT in states) {
+        for(s : State in states) {
             val tmap : MutableMap<EventType, Handler> = HashMap()
             map.put(s, tmap)
 
@@ -59,7 +53,7 @@ open class Region(val states : List<StateT>, val initial : StateT, internals : L
     open fun dispatch(event : Event) : Boolean {
         val handler : Handler? = map.get(current)!!.get(event.eType)//TODO: we should check guard (and improve transitions with guards, first)
 
-        var handled = false
+        var handled : Boolean
 
         when(current) {
             is CompositeState -> handled = current as CompositeState dispatch(event)
@@ -69,17 +63,21 @@ open class Region(val states : List<StateT>, val initial : StateT, internals : L
         if (!handled) {
             when(handler) {
                 is InternalTransition -> {
-                    handler.execute()
-                    dispatch(NullEvent)//it might be an auto-transition (with no event) after this one. Not recommended for internal transition, as it is likely to be an infinite loop... but why not?
-                    handled = true
+                    if (handler.check(event)/* && handler.port == event.port*/) {
+                        handler.execute()
+                        dispatch(NullEvent)//it might be an auto-transition (with no event) after this one. Not recommended for internal transition, as it is likely to be an infinite loop... but why not?
+                        handled = true
+                    } else {handled = false}
                 }
                 is Transition -> {//note: this could also be an AutoTransition, still, it is the same behavior
-                    current.onExit()
+                    if (handler.check(event)/* && handler.port == event.port*/) {
+                    current.action.onExit()
                     handler.execute()
                     current = handler.target
-                    current.onEntry()
+                    current.action.onEntry()
                     dispatch(NullEvent)//it might be an auto-transition (with no event) after this one
                     handled = true
+                    } else {handled = false}
                 }
                 else -> {
                     handled = false
@@ -91,27 +89,17 @@ open class Region(val states : List<StateT>, val initial : StateT, internals : L
 
 }
 
-open class CompositeState(action : StateAction = NullStateAction, name : String, val regions : List<Region> = ArrayList(), states : List<StateT>, initial : State, internals : List<InternalTransition>, transitions : List<Transition>, keepHistory : Boolean = false) : StateT, Region(states, initial, internals, transitions, keepHistory) {
+open class CompositeState(override val action : StateAction = NullStateAction, override val name : String, val regions : List<Region> = ArrayList(), states : List<State>, initial : State, internals : List<InternalTransition>, transitions : List<Transition>, keepHistory : Boolean = false) : State, Region(states, initial, internals, transitions, keepHistory) {
 
-    override val action : StateAction = action
-    override val name : String = name
-    override var parent : StateT? = null
-    override var component : Component? = null
-    {
-        setContext(this)
-        for(state : StateT in states) {
-            state.parent = this
+    override fun setComponent(component : Component) {
+        super<State>.setComponent(component)
+        for(state : State in states) {
+            state.setComponent(component)
         }
     }
 
-    override fun _setComponent(component : Component) {
-        this.component = component
-        for(state : StateT in states) {
-            state._setComponent(component)
-        }
-    }
     override fun onEntry() {
-        super<StateT>.onEntry()
+        super<State>.onEntry()
         if (!keepHistory)
             current = initial
         current.onEntry()
@@ -120,7 +108,7 @@ open class CompositeState(action : StateAction = NullStateAction, name : String,
 
     override fun onExit() {
         current.onExit()
-        super<StateT>.onExit()
+        super<State>.onExit()
     }
 
     override fun dispatch(event : Event) : Boolean {
@@ -131,15 +119,15 @@ open class CompositeState(action : StateAction = NullStateAction, name : String,
     }
 }
 
-class StateMachine(action : StateAction = NullStateAction, name : String, regions : List<Region> = ArrayList(), states : List<StateT>, initial : State, internals : List<InternalTransition>, transitions : List<Transition>, keepHistory : Boolean = false) : CompositeState(action, name, regions, states, initial, internals, transitions, keepHistory) {
+class StateMachine(action : StateAction = NullStateAction, name : String, regions : List<Region> = ArrayList(), states : List<State>, initial : State, internals : List<InternalTransition>, transitions : List<Transition>, keepHistory : Boolean = false) : CompositeState(action, name, regions, states, initial, internals, transitions, keepHistory) {
 
 }
 
 fun main(args : Array<String>) {
     println("Test")
 
-    val s1 : State = State(action = DefaultStateAction(), name = "s1")
-    val s2 : State = State(action = DefaultStateAction(), name = "s2")
+    val s1 : State = AtomicState(action = DefaultStateAction(), name = "s1")
+    val s2 : State = AtomicState(action = DefaultStateAction(), name = "s2")
     val states : MutableList<State> = ArrayList()
     states.add(s1)
     states.add(s2)
@@ -173,20 +161,11 @@ fun main(args : Array<String>) {
     val ports : MutableList<Port> = ArrayList()
     ports.add(p)
     val c : Component = Component("component", ports, sm)
-    c.start()
-    p.receive(e1)
-    p.receive(e1)
-    p.receive(e2)
-    p.receive(e1)
-    p.receive(e3)
-
-
-    /*sm.onEntry()//this should trigger t1
-    sm.dispatch(e1)//this should trigger it1
-    sm.dispatch(e1)//this should trigger it1
-    sm.dispatch(e2)//this should trigger nothing
-    sm.dispatch(e1)//this should trigger it1
-    sm.dispatch(e3)//this should trigger t2, and then t1 (auto-transition)*/
-
+    c.start() //this should trigger t1
+    p.receive(e1) //this should trigger it1
+    p.receive(e1) //this should trigger it1
+    p.receive(e2) //this should trigger nothing
+    p.receive(e1) //this should trigger it1
+    p.receive(e3) //this should trigger t2, and then t1 (auto-transition)
 
 }

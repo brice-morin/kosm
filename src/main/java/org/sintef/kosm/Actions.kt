@@ -2,41 +2,47 @@ package org.sintef.kosm
 
 //import kotlin.util.measureTimeNano
 
-trait Action {}
+trait Action{
+    var state : State?
+    var component : Component?
+}
 
 trait StateAction : Action {
     fun onEntry()
     fun onExit()
-    fun setContext(state : StateT)
 }
 
 trait HandlerAction : Action {
+    fun check(e : Event) = true
     fun execute()
 }
 
 //Null Actions
 object NullStateAction : StateAction {
 
+    override var state : State? = null
+    override var component : Component? = null
+
     override fun onEntry() {}
 
     override fun onExit() {}
 
-    override fun setContext(state : StateT) {}
-
 }
 
 object NullHandlerAction : HandlerAction {
+
+    override var state : State? = null
+    override var component : Component? = null
 
     override fun execute() {}
 
 }
 
 //Debug
-open class DebugStateAction(val action : StateAction) : StateAction by action {
+open class DebugStateAction() : StateAction {
 
-    var state : StateT? = null
-
-    override fun setContext(state : StateT) { this.state = state }
+    override var state : State? = null
+    override var component : Component? = null
 
     override fun onEntry() {
         //println(state?.name + ".onEntry took: " + measureTimeNano { action.onEntry() } + " ns")
@@ -48,7 +54,10 @@ open class DebugStateAction(val action : StateAction) : StateAction by action {
 
 }
 
-open class DebugHandlerAction(val action : HandlerAction) : HandlerAction by action {
+open class DebugHandlerAction() : HandlerAction {
+
+    override var state : State? = null
+    override var component : Component? = null
 
     override fun execute() {
         //println("Action took: " + measureTimeNano { action.execute() } + " ns")
@@ -57,6 +66,6 @@ open class DebugHandlerAction(val action : HandlerAction) : HandlerAction by act
 }
 
 //Mock-ups
-class DefaultStateAction : DebugStateAction(NullStateAction) {}
+class DefaultStateAction() : DebugStateAction() {}
 
-class DefaultHandlerAction : DebugHandlerAction(NullHandlerAction) {}
+class DefaultHandlerAction() : DebugHandlerAction() {}

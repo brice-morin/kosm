@@ -20,13 +20,14 @@ class Port(val name : String, val portType : PortType, val inEvents : List<Event
 
     fun receive(event : Event) {
         if (inEvents.containsItem(event.eType)) {
+            event.port = this
             component?.receive(event, this)
         } else {
             //Logger.getLogger(this.javaClass.getName()).warning("Port " + this.name + " cannot handle event of type " + event.eType)
         }
     }
 
-    fun setComponent(component : Component) {this.component = component}
+    //fun setComponent(component : Component) {this.component = component}
 
     //fun setConnector(connector : Connector) {this.connector = connector}
 
@@ -56,7 +57,7 @@ open class Component(val name : String, ports : List<Port>, val behavior : State
 
   {
       for(port : Port in ports) {
-          port.setComponent(this)
+          port.component = this
           if (port.portType == PortType.REQUIRED) {
               requiredPort.add(port)
           } else {
@@ -64,7 +65,7 @@ open class Component(val name : String, ports : List<Port>, val behavior : State
           }
       }
 
-      behavior._setComponent(this)
+      behavior.setComponent(this)
 
   }
 
