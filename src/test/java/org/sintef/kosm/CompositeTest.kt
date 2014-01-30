@@ -5,6 +5,7 @@ import kotlin.test.*
 import org.junit.After
 import org.junit.Before
 import java.util.ArrayList
+import java.util.HashMap
 
 public class CompositeTest {
 
@@ -70,8 +71,8 @@ public class CompositeTest {
         inEvents.add(et3)
         val outEvents : MutableList<EventType> = ArrayList()
         p = Port("p", PortType.PROVIDED, inEvents, outEvents)
-        val ports : MutableList<Port> = ArrayList()
-        ports.add(p!!)
+        val ports : MutableMap<String, Port> = HashMap()
+        ports.put(p!!.name, p!!)
 
         c = Component("test", ports, sm);
     }
@@ -81,7 +82,7 @@ public class CompositeTest {
         // tear down the test case
     }
 
-    Test fun testTransitions() {
+    Test fun testComposite() {
 
         //SM(s1 --> Comp(s1b -et1-> s2b[et2] -et3-> s1b) -et3-> s2[et2])
         c!!.start()

@@ -70,6 +70,8 @@ class DefaultStateAction() : DebugStateAction() {}
 
 class DefaultHandlerAction() : DebugHandlerAction() {}
 
+
+
 //Things to generate from ThingML
 object HelloTransitionAction : HandlerAction {
 
@@ -78,13 +80,43 @@ object HelloTransitionAction : HandlerAction {
 
     override fun check(e: Event): Boolean {
         println("DEBUG")
-        println(e is HelloEvent && e.port == component!!.providedPort.get("hello") )
-        return e is HelloEvent && e.port == component!!.providedPort.get("hello") //&& <custom guard>
+        println(e is HelloEvent && e.port == component!!.ports.get("hello") )
+        return e is HelloEvent && e.port == component!!.ports.get("hello") //&& <custom guard>
     }
 
     override fun execute(e : Event) {
         val e = e as HelloEvent
         println("Hello " + e.who)
+    }
+
+}
+
+object S1Action : StateAction {
+
+    override var state: State? = null
+    override var component: Component? = null
+
+    override fun onEntry() {
+        println("s1.onEntry")
+    }
+
+    override fun onExit() {
+        println("s1.onExit")
+    }
+
+}
+
+object S2Action : StateAction {
+
+    override var state: State? = null
+    override var component: Component? = null
+
+    override fun onEntry() {
+        println("s2.onEntry")
+    }
+
+    override fun onExit() {
+        println("s2.onExit")
     }
 
 }

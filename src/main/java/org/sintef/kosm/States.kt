@@ -109,9 +109,6 @@ open class CompositeState(override val action : StateAction = NullStateAction, o
         for (r : Region in regions) {
             r.setComponent(component)
         }
-        /*for(state : State in states) {
-            state.setComponent(component)
-        }*/
     }
 
     override fun onEntry() {
@@ -139,7 +136,7 @@ class StateMachine(action : StateAction = NullStateAction, name : String, region
 
 }
 
-fun main(args : Array<String>) {
+/*fun main(args : Array<String>) {
     println("Test")
 
     val s1 : State = AtomicState(action = DefaultStateAction(), name = "s1")
@@ -174,8 +171,8 @@ fun main(args : Array<String>) {
     inEvents.add(et3)
     val outEvents : MutableList<EventType> = ArrayList()
     val p : Port = Port("p", PortType.PROVIDED, inEvents, outEvents)
-    val ports : MutableList<Port> = ArrayList()
-    ports.add(p)
+    val ports : MutableMap<String, Port> = HashMap()
+    ports.put(p.name, p)
     val c : Component = Component("component", ports, sm)
     c.start() //this should trigger t1
     p.receive(e1) //this should trigger it1
@@ -184,4 +181,4 @@ fun main(args : Array<String>) {
     p.receive(e1) //this should trigger it1
     p.receive(e3) //this should trigger t2, and then t1 (auto-transition)
 
-}
+}   */

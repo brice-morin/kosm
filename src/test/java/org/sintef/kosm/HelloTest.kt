@@ -5,6 +5,7 @@ import kotlin.test.*
 import org.junit.After
 import org.junit.Before
 import java.util.ArrayList
+import java.util.HashMap
 
 public class HelloTest {
 
@@ -15,8 +16,8 @@ public class HelloTest {
     var s2 : State? = null
 
     Before fun setUp() {
-        s1 = AtomicState(action = DefaultStateAction(), name = "s1")
-        s2 = AtomicState(action = DefaultStateAction(), name = "s2")
+        s1 = AtomicState(action = S1Action, name = "s1")
+        s2 = AtomicState(action = S2Action, name = "s2")
         val states : MutableList<State> = ArrayList()
         states.add(s1!!)
         states.add(s2!!)
@@ -33,8 +34,8 @@ public class HelloTest {
         inEvents.add(HelloEventType)
         val outEvents : MutableList<EventType> = ArrayList()
         p = Port("hello", PortType.PROVIDED, inEvents, outEvents)
-        val ports : MutableList<Port> = ArrayList()
-        ports.add(p!!)
+        val ports : MutableMap<String, Port> = HashMap()
+        ports.put(p!!.name, p!!)
 
         c = Component("HelloWorld", ports, sm!!);
     }
