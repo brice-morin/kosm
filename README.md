@@ -3,6 +3,4 @@ kosm
 
 KOtlin State Machine
 
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/brice-morin/kosm/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
+Examples for most concepts can be found in the [test folder](https://github.com/brice-morin/kosm/tree/master/src/test/java/org/sintef/kosm)
